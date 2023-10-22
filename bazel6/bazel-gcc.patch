@@ -1,0 +1,9 @@
+--- ./third_party/ijar/mapped_file_unix.cc.gcc~	2022-01-29 12:09:38.525759701 +0200
++++ ./third_party/ijar/mapped_file_unix.cc	2022-01-29 12:09:59.650569861 +0200
+@@ -18,6 +18,7 @@
+ #include <sys/mman.h>
+ #include <unistd.h>
+ 
++#include <stdexcept>
+ #include <algorithm>
+ #include <limits>
