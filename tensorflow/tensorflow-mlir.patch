@@ -1,0 +1,725 @@
+diff --git a/third_party/systemlibs/llvm-project.BUILD b/third_party/systemlibs/llvm-project.BUILD
+new file mode 100644
+index 0000000000..3080325191
+--- /dev/null
++++ tensorflow/tensorflow/third_party/systemlibs/llvm-project.BUILD
+@@ -0,0 +1,6 @@
++licenses(["notice"])  # MIT
++
++filegroup(
++    name = "COPYING",
++    visibility = ["//visibility:public"],
++)
+diff --git a/third_party/systemlibs/llvm.BUILD b/third_party/systemlibs/llvm.BUILD
+new file mode 100644
+index 0000000000..9f6f323503
+--- /dev/null
++++ tensorflow/tensorflow/third_party/systemlibs/llvm.BUILD
+@@ -0,0 +1,176 @@
++licenses(["notice"])  # MIT
++
++exports_files(["LICENSE.TXT"])
++
++filegroup(
++    name = "COPYING",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Core",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Object",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Analisys",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "TransformUtils",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Support",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Scalar",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Linker",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Analysis",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "BitReader",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "BitWriter",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "CodeGen",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "IPO",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "ObjCARC",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "IRReader",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "AMDGPUCodeGen",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "ARMCodeGen",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "PowerPCCodeGen",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "X86CodeGen",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "NVPTXCodeGen",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Target",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "MC",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "OrcJIT",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "CallOpInterfacesIncGen",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "DerivedAttributeOpInterface",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "TableGen",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "ExecutionEngine",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "AsmParser",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "X86Disassembler",
++    linkopts = ["-lLLVM"],
++    visibility = ["//visibility:public"],
++)
+diff --git a/third_party/systemlibs/mlir.BUILD b/third_party/systemlibs/mlir.BUILD
+new file mode 100644
+index 0000000000..ee9a7711a8
+--- /dev/null
++++ tensorflow/tensorflow/third_party/systemlibs/mlir.BUILD
+@@ -0,0 +1,499 @@
++licenses(["notice"])  # MIT
++
++exports_files(["LICENSE.TXT"])
++
++filegroup(
++    name = "COPYING",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Affine",
++    linkopts = ["-lMLIRAffineEDSC",
++                "-lMLIRAffineOps",
++                "-lMLIRAffineToStandard",
++                "-lMLIRAffineTransforms",
++                "-lMLIRAffineUtils",],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "StandardOps",
++    linkopts = ["-lMLIRIRStandardOps"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "StandardOpsTransforms",
++    linkopts = ["-lMLIRStandardOpsTransforms"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "TensorTransforms",
++    linkopts = ["-lMLIRTransforms"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "IR",
++    linkopts = ["-lMLIRIR"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "TargetLLVMIR",
++    linkopts = ["-lMLIRTargetLLVMIR"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Pass",
++    linkopts = ["-lMLIRPass"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Parser",
++    linkopts = ["-lMLIRParser"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Support",
++    linkopts = ["-lMLIRSupport"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Analysis",
++    linkopts = ["-lMLIRAnalysis"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Dialect",
++    linkopts = ["-lMLIRDialect"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Translation",
++    linkopts = ["-lMLIRTranslation"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "InferTypeOpInterface",
++    linkopts = ["-lMLIRInferTypeOpInterface"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Transforms",
++    linkopts = ["-lMLIRTransforms"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "TransformUtils",
++    linkopts = ["-lMLIRTransformUtils"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "LinalgOps",
++    linkopts = ["-lMLIRLinalgOps"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "VectorToLLVM",
++    linkopts = ["-lMLIRVectorToLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "CopyOpInterface",
++    linkopts = ["-lMLIRCopyOpInterface"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "DerivedAttributeOpInterface",
++    linkopts = ["-lMLIRDerivedAttributeOpInterface"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "LoopLikeInterface",
++    linkopts = ["-lMLIRLoopLikeInterface"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "SideEffects",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "EDSC",
++    linkopts = ["-lMLIREDSC"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "TableGen",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "LinalgTransforms",
++    linkopts = ["-lMLIRLinalgTransforms"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "VectorToSCF",
++    linkopts = ["-lMLIRVectorToSCF"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "SideEffectInterfaces",
++    linkopts = ["-lMLIRSideEffectInterfaces"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "ViewLikeInterface",
++    linkopts = ["-lMLIRViewLikeInterface"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "TargetROCDLIR",
++    linkopts = ["-lMLIRTargetROCDLIR"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "ShapeToStandard",
++    linkopts = ["-lMLIRShapeToStandard"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "TargetNVVMIR",
++    linkopts = ["-lMLIRTargetNVVMIR"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "GPUToNVVMTransforms",
++    linkopts = ["-lMLIRGPUToNVVMTransforms"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "GPUToGPURuntimeTransforms",
++    linkopts = ["-lMLIRGPUToGPURuntimeTransforms"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "SCFToStandard",
++    linkopts = ["-lMLIRSCFToStandard"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "SCFTransforms",
++    linkopts = ["-lMLIRSCFTransforms"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "AffineToStandard",
++    linkopts = ["-lMLIRAffineToStandard"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "GPUToROCDLTransforms",
++    linkopts = ["-lMLIRGPUToROCDLTransforms"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "LinalgToLLVM",
++    linkopts = ["-lMLIRLinalgToLLVM"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "SideEffectTdFiles",
++    linkopts = ["-lMLIRSideEffectInterfaces"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "ControlFlowInterfaces",
++    linkopts = ["-lMLIRControlFlowInterfaces"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "AsmParser",
++    linkopts = ["-lMLIRParser"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "ExecutionEngineUtils",
++    linkopts = ["-lMLIRExecutionEngine"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "mlir_c_runner_utils",
++    linkopts = ["-lmlir_c_runner_utils"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "mlir_runner_utils",
++    linkopts = ["-lmlir_runner_utils"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "TensorDialect",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "ShapeTransforms",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "TensorOpsTdFiles",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Rewrite",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "AllPassesAndDialects",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "LLVMDialect",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "ROCDLDialect",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "LLVMTransfoms",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "AffineToStandardTransforms",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "NVVMDialect",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "SCFToGPUPass",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "GPUTransforms",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "CFGTransforms",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "GPUDialect",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "SCFDialect",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "VectorOps",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "AllPassesAndDialectsNoRegistration",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "Shape",
++    linkopts = ["-lMLIRShape",
++                "-lMLIRShapeOpsTransforms",
++                "-lMLIRShapeToSCF",
++                "-lMLIRShapeToStandard.",],
++    visibility = ["//visibility:public"],
++)
++
++#genrule(
++#    name = "lncython",
++#    outs = ["cython"],
++#    cmd = "ln -s $$(which cython) $@",
++#)
++#sh_binary(
++#    name = "cython_binary",
++#    srcs = ["cython"],
++#    visibility = ["//visibility:public"],
++#)
++
++genrule(
++    name = "lnmlir-tblgen",
++    outs = ["mlir-tblgen.bin"],
++    cmd = "ln -s $$(which mlir-tblgen) $@",
++)
++sh_binary(
++    name = "mlir-tblgen",
++    srcs = ["mlir-tblgen.bin"],
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "CallOpInterfacesIncGen",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "QuantOps",
++    visibility = ["//visibility:public"],
++)
++
++cc_library(
++    name = "LLVMTransforms",
++    visibility = ["//visibility:public"],
++)
++
++package_group(
++    name = "friends",
++    packages = ["//..."],
++)
++
++# To reference all tablegen files here when checking for updates to them.
++filegroup(
++    name = "TdFiles",
++#    srcs = glob(["**/*.td"]),
++)
++
++filegroup(
++    name = "PassBaseTdFiles",
++    visibility = ["//visibility:public"],
++)
++
++
++filegroup(
++    name = "OpBaseTdFiles",
++#    srcs = [
++#        "include/mlir/Dialect/StandardOps/IR/StandardOpsBase.td",
++#        "include/mlir/IR/OpBase.td",
++#    ],
++    visibility = ["//visibility:public"],
++)
++
++filegroup(
++    name = "StdOpsTdFiles",
++#    srcs = [
++#        "include/mlir/Dialect/StandardOps/IR/Ops.td",
++#        "include/mlir/IR/OpAsmInterface.td",
++#        "include/mlir/Interfaces/CallInterfaces.td",
++#        "include/mlir/Interfaces/ControlFlowInterfaces.td",
++#        "include/mlir/Interfaces/SideEffectInterfaces.td",
++#        "include/mlir/Interfaces/VectorInterfaces.td",
++#        "include/mlir/Interfaces/ViewLikeInterface.td",
++#        ":OpBaseTdFiles",
++#    ],
++    visibility = ["//visibility:public"],
++)
++
++filegroup(
++    name = "AffineOpsTdFiles",
++#    srcs = [
++#        "include/mlir/Dialect/Affine/IR/AffineMemoryOpInterfaces.td",
++#        "include/mlir/Dialect/Affine/IR/AffineOps.td",
++#        "include/mlir/Interfaces/ControlFlowInterfaces.td",
++#        "include/mlir/Interfaces/LoopLikeInterface.td",
++#        "include/mlir/Interfaces/SideEffectInterfaces.td",
++#        ":OpBaseTdFiles",
++#    ],
++    visibility = ["//visibility:public"],
++)
++
++filegroup(
++    name = "QuantizationOpsTdFiles",
++#    srcs = [
++#        "include/mlir/Dialect/Quant/QuantOps.td",
++#        "include/mlir/Dialect/Quant/QuantOpsBase.td",
++#        "include/mlir/Interfaces/SideEffectInterfaces.td",
++#        ":OpBaseTdFiles",
++#    ],
++    visibility = ["//visibility:public"],
++)
++
++MLIR_HEADER_FILES = [
++        "include/mlir/Pass/PassBase.td",
++        "include/mlir/Interfaces/CallInterfaces.h",
++        "include/mlir/Interfaces/CallInterfaces.td",
++        "include/mlir/Interfaces/ControlFlowInterfaces.h",
++        "include/mlir/Interfaces/ControlFlowInterfaces.td",
++        "include/mlir/Interfaces/CopyOpInterface.td",
++        "include/mlir/Interfaces/SideEffectInterfaces.td",
++        "include/mlir/Interfaces/ViewLikeInterface.td",
++        "include/mlir/Dialect/LLVMIR/LLVMOpBase.td",
++        "include/mlir/Dialect/StandardOps/IR/Ops.td",
++        "include/mlir/Dialect/Shape/IR/ShapeOps.td",
++        "include/mlir/Dialect/Shape/IR/ShapeBase.td",
++        "include/mlir/Dialect/StandardOps/IR/StandardOpsBase.td",
++        "include/mlir/IR/OpAsmInterface.td",
++        "include/mlir/IR/OpBase.td",
++        "include/mlir/IR/SymbolInterfaces.td",
++        "include/mlir/Transforms/InliningUtils.h",
++        "include/mlir/Interfaces/InferTypeOpInterface.td",
++        "include/mlir/Interfaces/LoopLikeInterface.td",
++]
++
++genrule(
++    name = "link_mlir_files",
++    outs = MLIR_HEADER_FILES,
++    cmd = """
++      for i in $(OUTS); do
++        f=$${i#$(@D)/}
++        mkdir -p $(@D)/$${f%/*}
++        ln -sf $(INCLUDEDIR)/../$$f $(@D)/$$f
++      done
++    """,
++    visibility = [":friends"],
++)
+diff --git a/third_party/systemlibs/syslibs_configure.bzl b/third_party/systemlibs/syslibs_configure.bzl
+index 76948f2c2c..b3a6610743 100644
+--- tensorflow/tensorflow/third_party/systemlibs/syslibs_configure.bzl
++++ tensorflow/tensorflow/third_party/systemlibs/syslibs_configure.bzl
+@@ -30,6 +30,7 @@ VALID_LIBS = [
+     "icu",
+     "jsoncpp_git",
+     "libjpeg_turbo",
++    "llvm-project",
+     "lmdb",
+     "nasm",
+     "nsync",
+diff --git a/tensorflow/workspace.bzl b/tensorflow/workspace.bzl
+index 7981cb95d6..61223a371f 100755
+--- tensorflow/tensorflow/third_party/llvm/workspace.bzl	2021-08-01 18:42:36.308417899 +0300
++++ tensorflow/tensorflow/third_party/llvm/workspace.bzl	2021-08-01 21:02:56.117842382 +0300
+@@ -23,4 +23,9 @@
+             "//third_party/mlir:tblgen.bzl": "mlir/tblgen.bzl",
+             "//third_party/mlir:test.BUILD": "mlir/test/BUILD",
+         },
++        system_build_file = "//third_party/systemlibs:llvm-project.BUILD",
++        system_link_files = {
++            "//third_party/systemlibs:llvm.BUILD": "llvm/BUILD",
++            "//third_party/systemlibs:mlir.BUILD": "mlir/BUILD",
++        },
+     )

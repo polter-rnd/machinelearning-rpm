@@ -1,0 +1,13 @@
+diff --git a/tensorflow/tools/pip_package/build_pip_package.sh b/tensorflow/tools/pip_package/build_pip_package.sh
+index 7cf9bc4b..616aa1f9 100755
+--- a/tensorflow/tools/pip_package/build_pip_package.sh
++++ b/tensorflow/tools/pip_package/build_pip_package.sh
+@@ -39,7 +39,7 @@ function cp_external() {
+   cd "$src_dir"
+   for f in `find . ! -type d ! -name '*.py' ! -path '*local_config_cuda*' ! -path '*local_config_tensorrt*' ! -path '*pypi*' ! -path '*python_x86_64*' ! -path '*python_aarch64*' ! -path '*local_config_syslibs*' ! -path '*org_tensorflow*' ! -path '*llvm-project/llvm/*'`; do
+     mkdir -p "${dest_dir}/$(dirname ${f})"
+-    cp "${f}" "${dest_dir}/$(dirname ${f})/"
++    cp "${f}" "${dest_dir}/$(dirname ${f})/" || true
+   done
+   popd
+ 

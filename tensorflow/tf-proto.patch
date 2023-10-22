@@ -1,0 +1,42 @@
+--- tensorflow/third_party/systemlibs/protobuf.BUILD.orig	2020-10-31 16:58:57.707341300 +0200
++++ tensorflow/third_party/systemlibs/protobuf.BUILD	2020-10-31 16:59:11.083293976 +0200
+@@ -111,3 +111,26 @@ py_library(
+     visibility = ["//visibility:public"],
+     deps = [dep + "_proto" for dep in proto[1][1]],
+ ) for proto in WELL_KNOWN_PROTO_MAP.items()]
++
++
++_PROTO_API_HEADERS = [
++    "python/google/protobuf/proto_api.h",
++]
++
++genrule(
++    name = "copy_public_headers",
++    outs = _PROTO_API_HEADERS,
++    cmd = """
++      for i in $(OUTS); do
++        f=$${i#$(@D)/}
++        mkdir -p $(@D)/$${f/*}
++        curl https://raw.githubusercontent.com/protocolbuffers/protobuf/3.19.x/python/google/protobuf/$$f -o $(@D)/$$f
++      done
++    """,
++)
++
++cc_library(
++    name = "proto_api",
++    hdrs = _PROTO_API_HEADERS,
++    visibility = ["//visibility:public"],
++)
+diff --git a/tensorflow/python/BUILD b/tensorflow/python/BUILD
+index 5ab61271..d3554dcc 100644
+--- tensorflow/tensorflow/python/BUILD
++++ tensorflow/tensorflow/python/BUILD
+@@ -4721,7 +4721,7 @@ tf_python_pybind_extension(
+     features = ["-layering_check"],
+     deps = [
+         ":pywrap_densor_device_headers",
+-        "//tensorflow/dtensor/proto:layout_proto_cc",
++#        "//tensorflow/dtensor/proto:layout_proto_cc",
+         "//tensorflow/python/lib/core:pybind11_lib",
+         "//tensorflow/python/lib/core:pybind11_status_headers",
+         "//third_party/python_runtime:headers",  # buildcleaner: keep
