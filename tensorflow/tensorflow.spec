@@ -215,10 +215,9 @@ do
 done
 %endif
 # py3.11
-%if 0%{?fedora} == 38
+%if 0%{?fedora} >= 38
 sed -i 's|return self.value.component|return self.value[1]|' %{name}/tensorflow/lite/python/convert_phase.py
 %endif
-
 
 %build
 pushd %{name}
@@ -296,7 +295,7 @@ export TF_SYSTEM_LIBS=$LOCAL_LIBS
 export TF_IGNORE_MAX_BAZEL_VERSION=1
 export TEST_TMPDIR="%{_builddir}/%{name}"
 export LD_LIBRARY_PATH="/usr/local/cuda-%{vcu_maj}.%{vcu_min}/%{_lib}/"
-%if 0%{?fedora} > 38
+%if 0%{?fedora} >= 38
 export TF_PYTHON_VERSION=3.11
 %else
 export TF_PYTHON_VERSION=3.9
