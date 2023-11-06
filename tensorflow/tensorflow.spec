@@ -37,27 +37,30 @@ BuildRequires:  python3dist(cython) python3dist(wheel) python3dist(wrapt) python
 BuildRequires:  python3dist(packaging) python3dist(requests) python3dist(typing-extensions)
 BuildRequires:  python3dist(opt-einsum) python3dist(dill) python3dist(gast) python3dist(absl-py)
 BuildRequires:  python3dist(astor) python3dist(keras-preprocessing) python3dist(astunparse)
-BuildRequires:  python3dist(flatbuffers) python3dist(protobuf) >= 3.21.9
+
 #BuildRequires:  re2-devel snappy-devel
-%if 0%{?rhel} == 8
-BuildRequires:  python3dist(dataclasses)
-Requires:       python3dist(dataclasses)
-%endif
+#%if 0%{?rhel} == 8
+#BuildRequires:  python3dist(dataclasses)
+#Requires:       python3dist(dataclasses)
+#%endif
 %if ! (0%{?rhel} == 9)
 BuildRequires:  python3dist(tblib)
 Requires:       python3dist(tblib)
 %endif
 %if %{ext_flatbuf}
-BuildRequires:  flatbuffers-devel /usr/bin/flatc
+%if (0%{?fedora} > 37) || (0%{?rhel} > 9)
+BuildRequires:  flatbuffers-devel flatbuffers-compiler
+%else
+BuildRequires:  flatbuffers-compat-devel flatbuffers-compat-compiler
+%endif
+BuildRequires:  python3dist(flatbuffers)
 %endif
 %if %{ext_protbuf}
 BuildRequires:  protobuf-compat-devel >= 3.21.9
+BuildRequires:  python3dist(protobuf) >= 3.21.9
 %endif
 %if %{ext_grpcdev}
-BuildRequires:  grpc-compat grpc-compat-plugins grpc-compat-devel
-#%if 0%{?rhel} == 8
-#BuildRequires:  grpc-cpp
-#%endif
+BuildRequires:  grpc-compat grpc-compat-plugins grpc-compat-cpp grpc-compat-devel
 %endif
 %if ! (0%{?rhel} == 8)
 BuildRequires:  libxcrypt-compat
