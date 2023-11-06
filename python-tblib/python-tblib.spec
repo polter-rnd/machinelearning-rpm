@@ -1,7 +1,7 @@
 %global srcname tblib
 
 Name:           python-%{srcname}
-Version:        1.7.0
+Version:        2.0.0
 Release:        1%{?dist}
 Summary:        Traceback serialization library
 
