@@ -1,7 +1,7 @@
 %bcond_with tests
 
-Name:           flatbuffers
-Version:        2.0.8
+Name:           flatbuffers-compat
+Version:        23.3.3
 Release:        1%{?dist}
 Summary:        Memory efficient serialization library
 URL:            http://google.github.io/flatbuffers
@@ -9,9 +9,8 @@ URL:            http://google.github.io/flatbuffers
 # The entire source code is ASL 2.0 except grpc/ which is BSD (3 clause)
 License:        ASL 2.0 and BSD
 
-Source0:        https://github.com/google/flatbuffers/archive/v%{version}/%{name}-%{version}.tar.gz
+Source0:        https://github.com/google/flatbuffers/archive/v%{version}/flatbuffers-%{version}.tar.gz
 Source1:        flatc.1
-Source2:        flatbuffers.7
 
 BuildRequires:  gcc-c++
 BuildRequires:  cmake >= 2.8.9
@@ -26,29 +25,67 @@ BuildRequires: make
 # details: https://github.com/google/flatbuffers/pull/4305
 Provides:       bundled(grpc)
 
-%description
-FlatBuffers is a serialization library for games and other memory constrained
-apps. FlatBuffers allows you to directly access serialized data without
-unpacking/parsing it first, while still having great forwards/backwards
-compatibility.
+%global common_description %{expand:
+FlatBuffers is a cross platform serialization library architected for maximum
+memory efficiency. It allows you to directly access serialized data without
+parsing/unpacking it first, while still having great forwards/backwards
+compatibility.}
+
+%description %{common_description}
+
 
 %package        devel
 Summary:        Development files for %{name}
 Requires:       %{name}%{?_isa} = %{version}-%{release}
-%description    devel
-%{summary}.
 
-%package        python3
-Summary:        Python files for %{name}
+%description    devel %{common_description}
+
+This package contains libraries and header files for developing applications
+that use FlatBuffers.
+
+
+%package        compiler
+Summary:        FlatBuffers compiler (flatc)
+# The flatc compiler does not link against the shared library, so this could
+# possibly be removed; we leave it for now to ensure there is no version skew
+# across subpackages.
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 
-%description    python3
-This package contains python files for %{name}.
+%description    compiler %{common_description}
+
+This package contains flatc, the FlatBuffers compiler.
+
+
+%package        doc
+Summary:        Documentation and examples for FlatBuffers
+
+BuildArch:      noarch
+
+
+%description    doc %{common_description}
+
+This package contains documentation and examples for FlatBuffers.
+
+
+%package        python3
+Summary:        FlatBuffers serialization format for Python
+
+BuildArch:      noarch
+
+Recommends:     python3dist(numpy)
+
+Provides:       %{name}-python3 = %{version}-%{release}
+
+%description    python3 %{common_description}
+
+This package contains the Python runtime library for use with the Flatbuffers
+serialization format.
+
 
 %prep
-%autosetup -S git_am
+%autosetup -n flatbuffers-%{version} -S git_am
 # cleanup distribution
-rm -rf js net php docs go java js biicode {samples/,}android
+rm -rf js net php docs go java js biicode {samples/,}android kotlin/
 chmod -x readme.md
 
 %cmake -DCMAKE_BUILD_TYPE=Release \
@@ -60,6 +97,7 @@ chmod -x readme.md
 
 %build
 %cmake_build
+
 pushd python
 %{__python3} setup.py build
 popd
@@ -69,9 +107,9 @@ popd
 pushd python
 %{__python3} setup.py install --root %{buildroot}
 popd
-mkdir -p %{buildroot}%{_mandir}/man{1,7}
+mkdir -p %{buildroot}%{_mandir}/man1
 cp -p %SOURCE1 %{buildroot}%{_mandir}/man1/flatc.1
-cp -p %SOURCE2 %{buildroot}%{_mandir}/man7/flatbuffers.7
+
 
 %check
 %if %{with tests}
@@ -81,19 +119,29 @@ make test
 %ldconfig_scriptlets
 
 %files
-%license LICENSE.txt
-%doc readme.md
-%{_bindir}/flatc
-%{_libdir}/libflatbuffers.so
-%{_libdir}/libflatbuffers.so.2
+%license LICENSE
+
 %{_libdir}/libflatbuffers.so.{%version}
-%{_mandir}/man1/flatc.1*
 
 %files devel
-%{_includedir}/flatbuffers
-%{_mandir}/man7/flatbuffers.7*
+%{_includedir}/flatbuffers/
+
+%{_libdir}/libflatbuffers.so
+
+%{_libdir}/cmake/flatbuffers/
 %{_libdir}/pkgconfig/flatbuffers.pc
-%{_libdir}/cmake/flatbuffers/*.cmake
+
+
+%files compiler
+%{_bindir}/flatc
+%{_mandir}/man1/flatc.1*
+
+
+%files doc
+%license LICENSE
+%doc CHANGELOG.md
+%doc SECURITY.md
+%doc readme.md
 
 %files python3
 %{python3_sitelib}/*
