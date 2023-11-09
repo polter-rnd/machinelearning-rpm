@@ -1,31 +1,101 @@
 # Build -python subpackage
 %bcond_without python
+# Build -python subpackage with C++. This significantly improves performance
+# compared to the pure-Python implementation.
+%bcond_without python_cpp
 # Build -java subpackage
 %bcond_with java
 
-# Disable LTO to work around annobin error messages
-%global _lto_cflags %nil
-%define _disable_source_fetch 0
-
 Summary:        Protocol Buffers - Google's data interchange format
 Name:           protobuf-compat
+# NOTE: perl-Alien-ProtoBuf has an exact-version dependency on the version of
+# protobuf with which it was built; it therefore needs to be rebuilt even for
+# “patch” updates of protobuf.
 Version:        3.21.12
-Release:        1%{?dist}
-License:        BSD
+%global so_version 32
+Release:        2%{?dist}
+
+# The entire source is BSD-3-Clause, except the following files, which belong
+# to the build system; are unpackaged maintainer utility scripts; or are used
+# only for building tests that are not packaged—and so they do not affect the
+# licenses of the binary RPMs:
+#
+# FSFAP:
+#   m4/ax_cxx_compile_stdcxx.m4
+#   m4/ax_prog_cc_for_build.m4
+#   m4/ax_prog_cxx_for_build.m4
+# Apache-2.0:
+#   python/mox.py
+#   python/stubout.py
+#   third_party/googletest/
+#     except the following, which are BSD-3-Clause:
+#       third_party/googletest/googletest/test/gtest_pred_impl_unittest.cc
+#       third_party/googletest/googletest/include/gtest/gtest-param-test.h
+#       third_party/googletest/googletest/include/gtest/gtest-param-test.h.pump
+#       third_party/googletest/googletest/include/gtest/internal/gtest-param-util-generated.h
+#       third_party/googletest/googletest/include/gtest/internal/gtest-param-util-generated.h.pump
+#       third_party/googletest/googletest/include/gtest/internal/gtest-type-util.h
+#       third_party/googletest/googletest/include/gtest/internal/gtest-type-util.h.pump
+# MIT:
+#   conformance/third_party/jsoncpp/json.h
+#   conformance/third_party/jsoncpp/jsoncpp.cpp
+License:        BSD-3-Clause
 URL:            https://github.com/protocolbuffers/protobuf
-Source:         https://github.com/protocolbuffers/protobuf/archive/v%{version}/protobuf-%{version}-all.tar.gz
+Source0:        %{url}/archive/v%{version}%{?rcver}/protobuf-%{version}%{?rcver}-all.tar.gz
+
 Source1:        ftdetect-proto.vim
 Source2:        protobuf-init.el
-# For tests (using exactly the same version as the release)
-Source3:        https://github.com/google/googletest/archive/5ec7f0c4a113e2f18ac2c6cc7df51ad6afc24081.zip
 
-BuildRequires:  make
+# We bundle a copy of the exact version of gtest that is used by upstream in
+# the source RPM rather than using the system copy. This is to be discouraged,
+# but necessary in this case.  It is not treated as a bundled library because
+# it is used only at build time, and contributes nothing to the installed
+# files.  We take measures to verify this in %%check. See
+# https://github.com/protocolbuffers/protobuf/tree/v%%{version}/third_party to
+# check the correct commit hash.
+%global gtest_url https://github.com/google/googletest
+%global gtest_commit 5ec7f0c4a113e2f18ac2c6cc7df51ad6afc24081
+%global gtest_dir googletest-%{gtest_commit}
+# For tests (using exactly the same version as the release)
+Source3:        %{gtest_url}/archive/%{gtest_commit}/%{gtest_dir}.tar.gz
+
+# Man page hand-written for Fedora in groff_man(7) format based on “protoc
+# --help” output.
+Source4:        protoc.1
+
+# https://github.com/protocolbuffers/protobuf/issues/8082
+Patch1:         protobuf-3.14-disable-IoTest.LargeOutput.patch
+# Disable tests that are failing on 32bit systems
+Patch2:         disable-tests-on-32-bit-systems.patch
+# https://bugzilla.redhat.com/show_bug.cgi?id=2051202
+# java.lang.ClassLoader.defineClass(java.lang.String,byte[],int,int,java.security.ProtectionDomain)
+# throws java.lang.ClassFormatError accessible: module java.base does not "opens java.lang" to unnamed module @12d5624a
+#	at com.google.protobuf.ServiceTest.testGetPrototype(ServiceTest.java:107)
+Patch3:         protobuf-3.19.4-jre17-add-opens.patch
+# Backport upstream commit da973aff2adab60a9e516d3202c111dbdde1a50f:
+#   Fix build with Python 3.11
+#
+#   The PyFrameObject structure members have been removed from the public C API.
+Patch4:         protobuf-3.19.4-python3.11.patch
+
+# A bundled copy of jsoncpp is included in the conformance tests, but the
+# result is not packaged, so we do not treat it as a formal bundled
+# dependency—thus the virtual Provides below is commented out. The bundling is
+# removed in a later release:
+#   Make jsoncpp a formal dependency
+#   https://github.com/protocolbuffers/protobuf/pull/10739
+# The bundled version number is obtained from JSONCPP_VERSION_STRING in
+# conformance/third_party/jsoncpp/json.h.
+# Provides:       bundled(jsoncpp) = 1.6.5
+
 BuildRequires:  autoconf
 BuildRequires:  automake
-BuildRequires:  emacs
-BuildRequires:  gcc-c++
 BuildRequires:  libtool
-BuildRequires:  pkgconfig
+
+BuildRequires:  make
+BuildRequires:  gcc-c++
+
+BuildRequires:  emacs
 BuildRequires:  zlib-devel
 
 %description
@@ -103,31 +173,31 @@ which only depends libprotobuf-lite, which is much smaller than libprotobuf but
 lacks descriptors, reflection, and some other features.
 
 %if %{with python}
-%package -n python%{python3_pkgversion}-%{name}
-Summary:        Python 3 bindings for Google Protocol Buffers
+%package -n python3-%{name}
+Summary:        Python bindings for Google Protocol Buffers
+BuildRequires:  python3-devel
+BuildRequires:  python3dist(setuptools)
+BuildRequires:  python3dist(wheel)
+%if %{with python_cpp}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+%else
 BuildArch:      noarch
-BuildRequires:  python%{python3_pkgversion}-devel
-BuildRequires:  python%{python3_pkgversion}-setuptools
-BuildRequires:  python%{python3_pkgversion}-wheel
-Requires:       python%{python3_pkgversion}-six >= 1.9
+%endif
 Conflicts:      %{name}-compiler > %{version}
 Conflicts:      %{name}-compiler < %{version}
 Provides:       %{name}-python3 = %{version}-%{release}
-Provides:       protobuf-python3 = %{version}-%{release}
-Obsoletes:      protobuf-python3 < %{version}
-Conflicts:      protobuf-python3 < %{version}
-Obsoletes:      python%{python3_pkgversion}-protobuf < %{version}-%{release}
-Enhances:       protobuf-python3
-%{?python_provide:%python_provide python%{python3_pkgversion}-%{name}}
 
-%description -n python%{python3_pkgversion}-%{name}
-This package contains Python 3 libraries for Google Protocol Buffers
+%description -n python3-%{name}
+This package contains Python libraries for Google Protocol Buffers
 %endif
 
 %package vim
 Summary:        Vim syntax highlighting for Google Protocol Buffers descriptions
 BuildArch:      noarch
-Requires:       vim-enhanced
+# We don’t really need vim or vim-enhanced to be already installed in order to
+# install a plugin for it. We do need to depend on vim-filesystem, which
+# provides the necessary directory structure.
+Requires:       vim-filesystem
 
 %description vim
 This package contains syntax highlighting for Google Protocol Buffers
@@ -135,12 +205,16 @@ descriptions in Vim editor
 
 
 %if %{with java}
+%ifarch %{java_arches}
+
 %package java
 Summary:        Java Protocol Buffers runtime library
 BuildArch:      noarch
 BuildRequires:  maven-local
 BuildRequires:  mvn(com.google.code.gson:gson)
 BuildRequires:  mvn(com.google.guava:guava)
+BuildRequires:  mvn(com.google.guava:guava-testlib)
+BuildRequires:  mvn(com.google.truth:truth)
 BuildRequires:  mvn(junit:junit)
 BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
 BuildRequires:  mvn(org.apache.maven.plugins:maven-antrun-plugin)
@@ -191,6 +265,7 @@ BuildArch:      noarch
 Protocol Buffer BOM POM.
 
 %endif
+%endif
 
 %package emacs
 Summary:        Emacs mode for Google Protocol Buffers descriptions
@@ -204,38 +279,42 @@ descriptions in the Emacs editor.
 
 %prep
 %setup -q -n protobuf-%{version}%{?rcver} -a 3
-mv googletest-5ec7f0c4a113e2f18ac2c6cc7df51ad6afc24081/* third_party/googletest/
+%ifarch %{ix86}
+# IoTest.LargeOutput fails on 32bit arches
+# https://github.com/protocolbuffers/protobuf/issues/8082
+%patch -P 1 -p1
+# Need to disable more tests that fail on 32bit arches only
+%patch -P 2 -p0
+%endif
+%patch -P 3 -p1 -b .jre17
+%patch -P 4 -p1 -b .python311
+
+# Copy in the needed gtest/gmock implementations.
+%setup -q -T -D -b 3 -n protobuf-%{version}%{?rcver}
+rm -rvf 'third_party/googletest'
+mv '../%{gtest_dir}' 'third_party/googletest'
+
 find -name \*.cc -o -name \*.h | xargs chmod -x
-find examples -type f | xargs chmod 644
 %if %{with java}
-%pom_remove_dep org.easymock:easymockclassextension java/pom.xml java/core/pom.xml java/lite/pom.xml java/util/pom.xml
-%pom_remove_dep com.google.truth:truth java/pom.xml java/core/pom.xml java/lite/pom.xml java/util/pom.xml
+%ifarch %{java_arches}
 %pom_remove_dep com.google.errorprone:error_prone_annotations java/util/pom.xml
-%pom_remove_dep com.google.guava:guava-testlib java/pom.xml java/util/pom.xml
-# These use easymockclassextension
-rm java/core/src/test/java/com/google/protobuf/ServiceTest.java
-# These use truth or error_prone_annotations or guava-testlib
-rm java/core/src/test/java/com/google/protobuf/LiteralByteStringTest.java
-rm java/core/src/test/java/com/google/protobuf/BoundedByteStringTest.java
-rm java/core/src/test/java/com/google/protobuf/RopeByteStringTest.java
-rm java/core/src/test/java/com/google/protobuf/RopeByteStringSubstringTest.java
-rm java/core/src/test/java/com/google/protobuf/TextFormatTest.java
-rm -r java/util/src/test/java/com/google/protobuf/util
-rm -r java/util/src/main/java/com/google/protobuf/util
+%pom_remove_dep com.google.j2objc:j2objc-annotations java/util/pom.xml
+
+# Remove annotation libraries we don't have
+annotations=$(
+    find -name '*.java' |
+      xargs grep -h -e '^import com\.google\.errorprone\.annotation' \
+                    -e '^import com\.google\.j2objc\.annotations' |
+      sort -u | sed 's/.*\.\([^.]*\);/\1/' | paste -sd\|
+)
+find -name '*.java' | xargs sed -ri \
+    "s/^import .*\.($annotations);//;s/@($annotations)"'\>\s*(\((("[^"]*")|([^)]*))\))?//g'
 
 # Make OSGi dependency on sun.misc package optional
 %pom_xpath_inject "pom:configuration/pom:instructions" "<Import-Package>sun.misc;resolution:=optional,*</Import-Package>" java/core
 
 # Backward compatibility symlink
-%mvn_file :protobuf-java:jar: %{name}/%{name}-java %{name}
-
-# This test is incredibly slow on arm
-# https://github.com/google/protobuf/issues/2389
-%ifarch %{arm} s390x
-mv java/core/src/test/java/com/google/protobuf/IsValidUtf8Test.java \
-   java/core/src/test/java/com/google/protobuf/IsValidUtf8Test.java.slow
-mv java/core/src/test/java/com/google/protobuf/DecodeUtf8Test.java \
-   java/core/src/test/java/com/google/protobuf/DecodeUtf8Test.java.slow
+%mvn_file :protobuf-java:jar: protobuf/protobuf-java protobuf
 %endif
 %endif
 
@@ -257,46 +336,50 @@ export PTHREAD_LIBS="-lpthread"
 
 %if %{with python}
 pushd python
-%py3_build
+%py3_build %{?with_python_cpp:-- --cpp_implementation}
 popd
 %endif
 
 %if %{with java}
-%ifarch s390x %{arm}
+%ifarch %{java_arches}
+%ifarch %{ix86} s390x
 export MAVEN_OPTS=-Xmx1024m
 %endif
+%pom_disable_module kotlin java/pom.xml
+%pom_disable_module kotlin-lite java/pom.xml
 %mvn_build -s -- -f java/pom.xml
+%endif
 %endif
 
 %{_emacs_bytecompile} editors/protobuf-mode.el
 
 
 %check
-# Java tests fail on s390x
-%ifarch s390x
-fail=0
-%else
-fail=1
-%endif
-%make_build check CXXFLAGS="%{build_cxxflags} -Wno-error=type-limits" || exit $fail
+%make_build check CXXFLAGS="%{build_cxxflags} -Wno-error=type-limits"
 
 
 %install
 %make_install %{?_smp_mflags} STRIPBINARIES=no INSTALL="%{__install} -p" CPPROG="cp -p"
-find %{buildroot} -type f -name "*.la" -exec rm -f {} \;
+find %{buildroot} -type f -name "*.la" -exec rm -f {} +
+
+# protoc.1 man page
+install -p -m 0644 -D -t '%{buildroot}%{_mandir}/man1' '%{SOURCE4}'
 
 %if %{with python}
 pushd python
-%py3_install
-find %{buildroot}%{python3_sitelib} -name \*.py |
-  xargs sed -i -e '1{\@^#!@d}'
+%py3_install %{?with_python_cpp:-- --cpp_implementation}
+%if %{without python_cpp}
+find %{buildroot}%{python3_sitelib} -name \*.py -exec sed -i -e '1{\@^#!@d}' {} +
+%endif
 popd
 %endif
 install -p -m 644 -D %{SOURCE1} %{buildroot}%{_datadir}/vim/vimfiles/ftdetect/proto.vim
 install -p -m 644 -D editors/proto.vim %{buildroot}%{_datadir}/vim/vimfiles/syntax/proto.vim
 
 %if %{with java}
+%ifarch %{java_arches}
 %mvn_install
+%endif
 %endif
 
 mkdir -p %{buildroot}%{_emacs_sitelispdir}/%{name}
@@ -304,8 +387,6 @@ install -p -m 0644 editors/protobuf-mode.el %{buildroot}%{_emacs_sitelispdir}/%{
 install -p -m 0644 editors/protobuf-mode.elc %{buildroot}%{_emacs_sitelispdir}/%{name}
 mkdir -p %{buildroot}%{_emacs_sitestartdir}
 install -p -m 0644 %{SOURCE2} %{buildroot}%{_emacs_sitestartdir}
-# cleanup bad ro build rights
-chmod +w -R %{buildroot}
 
 
 %ldconfig_scriptlets
@@ -315,13 +396,14 @@ chmod +w -R %{buildroot}
 %files
 %doc CHANGES.txt CONTRIBUTORS.txt README.md
 %license LICENSE
-%{_libdir}/libprotobuf.so.*
+%{_libdir}/libprotobuf.so.%{so_version}{,.*}
 
 %files compiler
 %doc README.md
 %license LICENSE
 %{_bindir}/protoc
-%{_libdir}/libprotoc.so.*
+%{_mandir}/man1/protoc.1*
+%{_libdir}/libprotoc.so.%{so_version}{,.*}
 
 %files devel
 %dir %{_includedir}/google
@@ -332,6 +414,7 @@ chmod +w -R %{buildroot}
 %doc examples/add_person.cc examples/addressbook.proto examples/list_people.cc examples/Makefile examples/README.md
 
 %files emacs
+%license LICENSE
 %{_emacs_sitelispdir}/%{name}/
 %{_emacs_sitestartdir}/protobuf-init.el
 
@@ -340,7 +423,8 @@ chmod +w -R %{buildroot}
 %{_libdir}/libprotoc.a
 
 %files lite
-%{_libdir}/libprotobuf-lite.so.*
+%license LICENSE
+%{_libdir}/libprotobuf-lite.so.%{so_version}{,.*}
 
 %files lite-devel
 %{_libdir}/libprotobuf-lite.so
@@ -350,23 +434,38 @@ chmod +w -R %{buildroot}
 %{_libdir}/libprotobuf-lite.a
 
 %if %{with python}
-%files -n python%{python3_pkgversion}-%{name}
+%files -n python3-%{name}
+%if %{with python_cpp}
+%dir %{python3_sitearch}/google
+%{python3_sitearch}/google/protobuf/
+%{python3_sitearch}/protobuf-*-py3.*.egg-info/
+%{python3_sitearch}/protobuf-*-py3.*-nspkg.pth
+%else
+%license LICENSE
+%dir %{python3_sitelib}/google
+%{python3_sitelib}/google/protobuf/
+%{python3_sitelib}/protobuf-*-py3.*.egg-info/
+%{python3_sitelib}/protobuf-*-py3.*-nspkg.pth
+%endif
 %doc python/README.md
 %doc examples/add_person.py examples/list_people.py examples/addressbook.proto
-%{python3_sitelib}/*
 %endif
 
 %files vim
+%license LICENSE
 %{_datadir}/vim/vimfiles/ftdetect/proto.vim
 %{_datadir}/vim/vimfiles/syntax/proto.vim
 
 %if %{with java}
+%ifarch %{java_arches}
+
 %files java -f .mfiles-protobuf-java
 %doc examples/AddPerson.java examples/ListPeople.java
 %doc java/README.md
 %license LICENSE
 
 %files java-util -f .mfiles-protobuf-java-util
+%license LICENSE
 
 %files javadoc -f .mfiles-javadoc
 %license LICENSE
@@ -379,6 +478,8 @@ chmod +w -R %{buildroot}
 
 %files javalite -f .mfiles-protobuf-javalite
 %license LICENSE
+
+%endif
 %endif
 
 
