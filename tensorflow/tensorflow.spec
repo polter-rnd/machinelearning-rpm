@@ -1,4 +1,4 @@
-%global pkgvers 1
+%global pkgvers 2
 %global schash0 4dacf3f368eb7965e9b5c3bbdd5193986081c3b2
 %global branch0 master
 %global source0 https://github.com/tensorflow/tensorflow.git
@@ -37,27 +37,21 @@ BuildRequires:  python3dist(cython) python3dist(wheel) python3dist(wrapt) python
 BuildRequires:  python3dist(packaging) python3dist(requests) python3dist(typing-extensions)
 BuildRequires:  python3dist(opt-einsum) python3dist(dill) python3dist(gast) python3dist(absl-py)
 BuildRequires:  python3dist(astor) python3dist(keras-preprocessing) python3dist(astunparse)
+BuildRequires:  python3dist(tblib)
 
 #BuildRequires:  re2-devel snappy-devel
-#%if 0%{?rhel} == 8
-#BuildRequires:  python3dist(dataclasses)
-#Requires:       python3dist(dataclasses)
-#%endif
-%if ! (0%{?rhel} == 9)
-BuildRequires:  python3dist(tblib)
-Requires:       python3dist(tblib)
-%endif
 %if %{ext_flatbuf}
 %if (0%{?fedora} > 37) || (0%{?rhel} > 9)
-BuildRequires:  flatbuffers-devel flatbuffers-compiler
+BuildRequires:  flatbuffers-devel flatbuffers-compiler flatbuffers-python3
+Requires:       flatbuffers-python3
 %else
-BuildRequires:  flatbuffers-compat-devel flatbuffers-compat-compiler
+BuildRequires:  flatbuffers-compat-devel flatbuffers-compat-compiler flatbuffers-compat-python3
+Requires:       flatbuffers-compat-python3
 %endif
-BuildRequires:  python3dist(flatbuffers)
 %endif
 %if %{ext_protbuf}
-BuildRequires:  protobuf-compat-devel >= 3.21.9
-BuildRequires:  python3dist(protobuf) >= 3.21.9
+BuildRequires:  protobuf-compat-devel python3-protobuf-compat
+Requires:       python3-protobuf-compat
 %endif
 %if %{ext_grpcdev}
 BuildRequires:  grpc-compat grpc-compat-plugins grpc-compat-cpp grpc-compat-devel
@@ -69,9 +63,8 @@ BuildRequires:  libxcrypt
 %endif
 Requires:       python3dist(numpy) python3dist(packaging) python3dist(requests) python3dist(termcolor)
 Requires:       python3dist(six) python3dist(typing-extensions) python3dist(astor) python3dist(wrapt)
-Requires:       python3dist(astunparse) python3dist(gast) python3dist(flatbuffers) python3dist(protobuf) >= 3.21.9
+Requires:       python3dist(astunparse) python3dist(gast) python3dist(tblib) python3dist(ml-dtypes)
 Requires:       python3dist(opt-einsum) python3dist(dill) python3dist(keras-preprocessing) python3dist(absl-py)
-Requires:       python3dist(ml-dtypes)
 Recommends:     keras
 Recommends:     tensorboard
 Recommends:     tensorflow-estimator
@@ -111,15 +104,6 @@ BuildRequires:  libcusparse-devel-%{vcu_maj}-%{vcu_min}
 BuildRequires:  libcusolver-devel-%{vcu_maj}-%{vcu_min}
 BuildRequires:  libnccl-devel
 BuildRequires:  libcudnn8-devel
-Requires:       cuda-cudart-%{vcu_maj}-%{vcu_min}
-Requires:       cuda-nvrtc-%{vcu_maj}-%{vcu_min}
-Requires:       libcublas-%{vcu_maj}-%{vcu_min}
-Requires:       libcufft-%{vcu_maj}-%{vcu_min}
-Requires:       libcurand-%{vcu_maj}-%{vcu_min}
-Requires:       libcusparse-%{vcu_maj}-%{vcu_min}
-Requires:       libcusolver-%{vcu_maj}-%{vcu_min}
-Requires:       libnvjitlink-%{vcu_maj}-%{vcu_min}
-Requires:       libcudnn8
 %endif
 
 %if %{have_tensorrt}
@@ -148,6 +132,22 @@ Requires:       %{name}-tflite = %{version}-%{release}
 
 %description    devel
 This package contains development files for tensorflow.
+
+%package        cuda
+Summary:        Dependencies for CUDA support
+Requires:       %{name} = %{version}-%{release}
+Requires:       cuda-cudart-%{vcu_maj}-%{vcu_min}
+Requires:       cuda-nvrtc-%{vcu_maj}-%{vcu_min}
+Requires:       libcublas-%{vcu_maj}-%{vcu_min}
+Requires:       libcufft-%{vcu_maj}-%{vcu_min}
+Requires:       libcurand-%{vcu_maj}-%{vcu_min}
+Requires:       libcusparse-%{vcu_maj}-%{vcu_min}
+Requires:       libcusolver-%{vcu_maj}-%{vcu_min}
+Requires:       libnvjitlink-%{vcu_maj}-%{vcu_min}
+Requires:       libcudnn8
+
+%description    cuda
+This contains only dependencies necessary for CUDA support.
 
 
 %prep
@@ -274,8 +274,9 @@ echo 'test:v2 --test_tag_filters=-benchmark-test,-no_oss,-gpu,-oss_serial,-v1onl
 echo 'test:v2 --build_tag_filters=-benchmark-test,-no_oss,-gpu,-v1only' >> .tf_configure.bazelrc
 
 # system libs
-export LOCAL_LIBS="curl,zlib,gif,png,libjpeg_turbo,icu,org_sqlite,cython,six_archive,org_sqlite,double_conversion,typing_extensions_archive,astor_archive,wrapt,astunparse_archive,opt_einsum_archive,absl_py,dill_archive,gast_archive"
-#export LOCAL_LIBS="$LOCAL_LIBS,llvm-project,flatbuffers,com_google_absl,com_googlesource_code_re2,snappy,com_github_grpc_grpc,com_google_protobuf"
+export LOCAL_LIBS="curl,zlib,gif,png,libjpeg_turbo,icu,org_sqlite,cython,six_archive,org_sqlite,double_conversion,typing_extensions_archive"
+export LOCAL_LIBS="$LOCAL_LIBS,astor_archive,wrapt,astunparse_archive,opt_einsum_archive,absl_py,dill_archive,gast_archive,tblib_archive"
+#export LOCAL_LIBS="$LOCAL_LIBS,llvm-project,com_google_absl,com_googlesource_code_re2,snappy"
 %if %{ext_flatbuf}
 export LOCAL_LIBS="$LOCAL_LIBS,flatbuffers"
 %endif
@@ -284,9 +285,6 @@ export LOCAL_LIBS="$LOCAL_LIBS,com_google_protobuf"
 %endif
 %if %{ext_grpcdev}
 export LOCAL_LIBS="$LOCAL_LIBS,com_github_grpc_grpc"
-%endif
-%if ! (0%{?rhel} == 9)
-export LOCAL_LIBS="$LOCAL_LIBS,tblib_archive"
 %endif
 %ifarch aarch64
 export BAZEL_JAVAC_OPTS="-J-Xmx4g -J-Xms512m"
@@ -431,6 +429,8 @@ chmod +w -R %{_builddir}/%{name}/_bazel*
 %{_includedir}/%{name}
 %{python3_sitearch}/%{name}/include
 
+%files cuda
+# Nothing here, it's just a metapackage
 
 %changelog
 * Sun Oct 22 2023 Pavel Artsishevskii <polter.rnd@gmail.com>
